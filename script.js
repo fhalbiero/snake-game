@@ -1,11 +1,11 @@
 //difine html elements
 const board = document.getElementById('game-board');
 const instructionText = document.getElementById('instruction-text');
-const logo = document.getElementById('logo');
 const score = document.getElementById('score');
 const hightScoreEl = document.getElementById('hightScore');
 //define game variables;
-const GRID_SIZE = 20;
+const GRID_SIZE = 26;
+
 let snake = [{x: 10, y:10}];
 let food = generateFood();
 let direction = 'RIGHT';
@@ -45,7 +45,9 @@ function setPosition(el, pos) {
 
 //draw food
 function drawFood() {
-    const foodEl = createGameElement('div', 'food');
+    const foodEl = createGameElement('img', 'food');
+    foodEl.style.width = '20px';
+    foodEl.src = 'assets/food.png';
     setPosition(foodEl, food);
     board.appendChild(foodEl);
 }
@@ -76,12 +78,14 @@ function move() {
     }
     snake.unshift(head);
     if (head.x === food.x && head.y === food.y) {
+        console.log('eating food');
         food = generateFood();
         updateScore();
         increaseSpeed();
         clearInterval(gameInterval); //clear past interval
-        setInterval = setInterval(() => {
+        gameInterval = setInterval(() => {
             move();
+            checkColision();
             draw();
         }, gameSpeedDelay);
     } else {
@@ -97,24 +101,25 @@ function checkColision() {
     const head = snake[0];
     if (head.x < 1 || head.x > GRID_SIZE ||
         head.y < 1 || head.y > GRID_SIZE) {
-            resetGame();
+        resetGame();
     }
 
     for (let i = 1; i < snake.length; i++) {
-        if (head.x === snake[i].x || head.y === snake[i].y) {
+        if (head.x === snake[i].x && head.y === snake[i].y) {
+            console.log('colision with self at index', head, snake[i]);
             resetGame();
         }
     }
 }
 
 function resetGame() {
-    snake = [{x: 10, y: 10}];
-    food = generateFood();
     direction = 'RIGHT';
     gameSpeedDelay = 200;
     gameStarted = false;
     updateScore();
     updateHightScore();
+    snake = [];
+    food = null;
     stopGame();
 }
 
@@ -133,9 +138,10 @@ function updateHightScore() {
 
 //start game function
 function startGame() {
+    snake = [{x: 10, y:10}];
+    food = generateFood();
     gameStarted = true;
     instructionText.style.display = 'none';
-    logo.style.display = 'none';
     gameInterval = setInterval(() => {
         move();
         checkColision();
@@ -147,7 +153,6 @@ function stopGame() {
     clearInterval(gameInterval);
     gameStarted = false;
     instructionText.style.display = 'block';
-    logo.style.display = 'block';
 }
 
 //keypress event listener
